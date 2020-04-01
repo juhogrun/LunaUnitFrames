@@ -13,6 +13,7 @@ local backdrop = {
 	insets = {left = -1, right = -1, top = -1, bottom = -1},
 }
 local positions = {
+	top = "TOP",
 	topright = "TOPRIGHT",
 	topleft = "TOPLEFT",
 	leftcenter = "LEFTCENTER",
@@ -20,6 +21,7 @@ local positions = {
 	rightcenter = "RIGHTCENTER",
 	bottomright = "BOTTOMRIGHT",
 	bottomleft = "BOTTOMLEFT",
+	bottom = "BOTTOM",
 }
 local indicator = "Interface\\AddOns\\LunaUnitFrames\\media\\textures\\indicator"
 
