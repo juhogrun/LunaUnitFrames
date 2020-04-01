@@ -34,14 +34,33 @@ local function SquaresCallback(aggro, GUID, ...)
 end
 vex:RegisterCallback(SquaresCallback)
 
+local function checkAuraInversion(spell)
+	local inversion = string.find(spell, "!")
+--		print(inversion)
+		if inversion == 1 then
+			spell = spell.sub(spell, 2);
+		end
+--		print(spell)
+--		print(inversion == 1)
+		return spell, inversion == 1
+end
+
 local function checkAura(unit, spells, playeronly)
 	local spells = {strsplit(";",spells)}
+	local foundAtLeastOne = false
+	local returnName, returnRank, returnIcon, returnSpellId
 	for k,spell in ipairs(spells) do
+		local found = false
+		local inverted
+		spell, inverted = checkAuraInversion(spell)
 		if tonumber(spell) then
 			local i, casterunit,_,_,spellID = 1, select(7,UnitAura(unit, 1))
 			while spellID do
 				if spellID == tonumber(spell) and (not playeronly or playeronly and casterunit and UnitIsUnit(casterunit,"player")) then
-					return UnitAura(unit, i)
+					found = true
+					if not inverted then
+						return UnitAura(unit, i)
+					end
 				end
 				i = i + 1
 				casterunit,_,_,spellID = select(7, UnitAura(unit, i))
@@ -49,7 +68,10 @@ local function checkAura(unit, spells, playeronly)
 			i, casterunit,_,_,spellID = 1, select(7,UnitAura(unit, 1, "HARMFUL"))
 			while spellID do
 				if spellID == spell and (not playeronly or playeronly and casterunit and UnitIsUnit(casterunit,"player")) then
-					return UnitAura(unit, i, "HARMFUL")
+					found = true
+					if not inverted then
+						return UnitAura(unit, i, "HARMFUL")
+					end
 				end
 				i = i + 1
 				casterunit,_,_,spellID = select(7, UnitAura(unit, i, "HARMFUL"))
@@ -59,7 +81,10 @@ local function checkAura(unit, spells, playeronly)
 			local casterunit = select(7,UnitAura(unit, 1))
 			while spellName do
 				if spellName == spell and (not playeronly or playeronly and casterunit and UnitIsUnit(casterunit,"player")) then
-					return UnitAura(unit, i)
+					found = true
+					if not inverted then
+						return UnitAura(unit, i)
+					end
 				end
 				i = i + 1
 				spellName = UnitAura(unit, i)
@@ -69,13 +94,27 @@ local function checkAura(unit, spells, playeronly)
 			casterunit = select(7,UnitAura(unit, 1, "HARMFUL"))
 			while spellName do
 				if spellName == spell and (not playeronly or playeronly and casterunit and UnitIsUnit(casterunit,"player")) then
-					return UnitAura(unit, i, "HARMFUL")
+					found = true
+					if not inverted then
+						return UnitAura(unit, i, "HARMFUL")
+					end
 				end
 				i = i + 1
 				spellName = UnitAura(unit, i, "HARMFUL")
 				casterunit = select(7,UnitAura(unit, i, "HARMFUL"))
 			end
 		end
+		if found == false and inverted then
+			returnName, returnRank, returnIcon, _, _, _, returnSpellId = GetSpellInfo(spell)
+		--	print(inverted)
+		--	print(returnName)
+		end
+		if found then
+			foundAtLeastOne = true
+		end
+	end
+	if not foundAtLeastOne and returnIcon and returnSpellId then
+		return _, returnIcon, _, _, _, _, _, _, _, returnSpellId
 	end
 end
 
